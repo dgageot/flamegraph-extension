@@ -1,0 +1,19 @@
+{
+  "icon": "docker.svg",
+  "vm": {
+    "composefile": "docker-compose.yaml",
+    "exposes": {
+      "socket": "extension-flamegraph-extension.sock"
+    }
+  },
+  "ui": {
+    "dashboard-tab": {
+      "title": "Flamegraph",
+      "src": "index.html",
+      "root": "ui",
+      "backend": {
+        "socket": "extension-flamegraph-extension.sock"
+      }
+    }
+  }
+}
