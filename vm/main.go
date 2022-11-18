@@ -66,7 +66,16 @@ func profileProcess(ctx echo.Context) error {
 	return ctx.Blob(http.StatusOK, "application/json", buf)
 }
 
-func run(ctx context.Context, processName, duration string) ([]byte, error) {
+func profileImage() string {
+	profileImage := os.Getenv("DESKTOP_PLUGIN_IMAGE")
+	if profileImage == "" {
+		profileImage = "dgageot/flamegraph"
+	}
+
+	return profileImage
+}
+
+func run(ctx context.Context, processNameOrID, duration string) ([]byte, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, errors.Wrap(err, "connecting to docker")
@@ -74,8 +83,8 @@ func run(ctx context.Context, processName, duration string) ([]byte, error) {
 	defer cli.Close()
 
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
-		Image: "dgageot/ebpf",
-		Cmd:   []string{"/entrypoint.sh", processName, duration},
+		Image: profileImage(),
+		Cmd:   []string{"/entrypoint.sh", processNameOrID, duration},
 	}, &container.HostConfig{
 		PidMode:    "host",
 		Privileged: true,
@@ -101,8 +110,24 @@ func run(ctx context.Context, processName, duration string) ([]byte, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "waiting for container")
 		}
-	case <-statusCh:
+	case status := <-statusCh:
+		switch status.StatusCode {
+		case 0:
+			break
+		case 130:
+			return nil, errors.New("process not provided")
+		case 131:
+			return nil, errors.New("duration not provided")
+		case 132:
+			return nil, errors.New("process not found")
+		default:
+			return nil, errors.New("unable to profile")
+		}
 	}
+
+	defer func() {
+		_ = cli.ContainerRemove(ctx, containerID, types.ContainerRemoveOptions{})
+	}()
 
 	archive, _, err := cli.CopyFromContainer(ctx, containerID, "/out/profile.json")
 	if err != nil {
@@ -118,11 +143,6 @@ func run(ctx context.Context, processName, duration string) ([]byte, error) {
 	buf, err := io.ReadAll(t)
 	if err != nil {
 		return nil, errors.Wrap(err, "reading tar file")
-	}
-
-	// TODO: even if file not found
-	if err := cli.ContainerRemove(ctx, containerID, types.ContainerRemoveOptions{}); err != nil {
-		return nil, errors.Wrap(err, "removing container")
 	}
 
 	log.Println("Success")

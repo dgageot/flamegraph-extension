@@ -48,7 +48,7 @@ export function App() {
         setInProgress(false);
       })
       .catch((error)=> {
-        setError(error.message);
+        setError(error.message.replace(/['"]+/g, ''));
         setInProgress(false);
       })
   };
@@ -63,7 +63,7 @@ export function App() {
         </Typography>
 
         <Stack direction="row" spacing={2}>
-          <TextField id="outlined-basic" label="Process Name" value={processName} onChange={handleSetProcessName} variant="standard" disabled={inProgress} />
+          <TextField id="outlined-basic" label="Process Name or ID" value={processName} onChange={handleSetProcessName} variant="standard" disabled={inProgress} />
           <TextField id="outlined-basic" label="Duration (s)" value={duration} onChange={handleSetDuration} variant="standard" disabled={inProgress} />
           <Button variant="contained" onClick={fetchAndDisplayResponse} disabled={inProgress}>
             Profile{inProgress ? "..." : ""}

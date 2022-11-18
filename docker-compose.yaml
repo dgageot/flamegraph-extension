@@ -1,5 +1,7 @@
 services:
   flamegraph-extension:
     image: ${DESKTOP_PLUGIN_IMAGE}
+    environment:
+      - DESKTOP_PLUGIN_IMAGE=${DESKTOP_PLUGIN_IMAGE}
     volumes:
       - /var/run/docker.sock.raw:/var/run/docker.sock
