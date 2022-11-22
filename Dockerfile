@@ -52,7 +52,7 @@ LABEL org.opencontainers.image.title="Flamegraph" \
 RUN apk add --no-cache bcc-tools openjdk12
 ENV PATH=/usr/share/bcc/tools/:$PATH
 RUN mkdir /out
-COPY --link entrypoint.sh docker-compose.yaml metadata.json docker.svg flame.svg /
+COPY --link entrypoint.sh docker-compose.yaml metadata.json flame.svg /
 COPY --link --from=build-burn /burn/burn /bin/burn
 COPY --link --from=extract-headers /usr/src/linux-headers-5.15.49-linuxkit /usr/src/linux-headers-5.15.49-linuxkit
 COPY --link --from=build-perf-map-agent /perf-map-agent/out/* /
