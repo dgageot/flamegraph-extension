@@ -3,7 +3,6 @@ package main
 import (
 	"archive/tar"
 	"context"
-	_ "embed"
 	"flag"
 	"io"
 	"log"
@@ -20,9 +19,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-//go:embed profile.json
-var profile []byte
-
 func main() {
 	var socketPath string
 	flag.StringVar(&socketPath, "socket", "/tmp/volumes-service.sock", "Unix domain socket to listen on")
@@ -31,7 +27,6 @@ func main() {
 	router := echo.New()
 	router.HideBanner = true
 	router.GET("/profileProcess", profileProcess)
-	router.GET("/test", test)
 
 	log.Println("Starting listening on", socketPath)
 	address := ""
@@ -47,10 +42,6 @@ func main() {
 	}
 
 	log.Fatal(router.Start(address))
-}
-
-func test(ctx echo.Context) error {
-	return ctx.Blob(http.StatusOK, "application/json", profile)
 }
 
 func profileProcess(ctx echo.Context) error {
@@ -120,6 +111,8 @@ func run(ctx context.Context, processNameOrID, duration string) ([]byte, error) 
 			return nil, errors.New("duration not provided")
 		case 132:
 			return nil, errors.New("process not found")
+		case 133:
+			return nil, errors.New("java applications should be started with -XX:+PreserveFramePointer")
 		default:
 			return nil, errors.New("unable to profile")
 		}

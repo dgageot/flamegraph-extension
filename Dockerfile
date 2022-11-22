@@ -49,7 +49,7 @@ LABEL org.opencontainers.image.title="Flamegraph" \
     com.docker.extension.publisher-url="" \
     com.docker.extension.additional-urls="" \
     com.docker.extension.changelog=""
-RUN apk add --no-cache bcc-tools openjdk12
+RUN apk add --no-cache bcc-tools openjdk12 procps
 ENV PATH=/usr/share/bcc/tools/:$PATH
 RUN mkdir /out
 COPY --link entrypoint.sh docker-compose.yaml metadata.json flame.svg /
