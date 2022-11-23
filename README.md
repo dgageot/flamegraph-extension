@@ -4,6 +4,10 @@
 docker extension install dgageot/flamegraph-extension
 ```
 
+## Example
+
+![Flamegraph!](/doc/flame.png)
+
 ## Misc
 
 + [Flame Graphs](https://www.brendangregg.com/flamegraphs.html)
