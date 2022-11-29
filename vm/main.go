@@ -2,12 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"os"
-
-	"github.com/labstack/echo/v4"
 )
 
 func main() {
@@ -22,19 +21,22 @@ func main() {
 		log.Fatal(err)
 	}
 
-	router := echo.New()
-	router.Listener = ln
-	router.HideBanner = true
-	router.GET("/imageName", imageName)
-
-	log.Fatal(router.Start(""))
+	mux := http.NewServeMux()
+	mux.HandleFunc("/imageName", imageName)
+	server := &http.Server{
+		Handler: mux,
+	}
+	if err := server.Serve(ln); err != nil {
+		log.Fatal(err)
+	}
 }
 
-func imageName(ctx echo.Context) error {
+func imageName(w http.ResponseWriter, req *http.Request) {
 	profileImage := os.Getenv("DESKTOP_PLUGIN_IMAGE")
 	if profileImage == "" {
 		profileImage = "dgageot/flamegraph"
 	}
 
-	return ctx.String(http.StatusOK, profileImage)
+	w.Header().Add("Content-Type", "text/plain")
+	fmt.Fprint(w, profileImage)
 }
